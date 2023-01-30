@@ -1,12 +1,12 @@
 gdown
 tqdm
 numpy
-opencv_python==4.5.1.48
+opencv_python
 seaborn
 matplotlib
-openpifpaf==0.13.0
-torch==1.10.1
-torchvision==0.11.2 
-scikit_image==0.17.2
+openpifpaf
+torch
+torchvision
+scikit_image
 Pillow
 scikit_learn

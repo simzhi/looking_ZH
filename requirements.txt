@@ -5,8 +5,6 @@ opencv_python
 seaborn
 matplotlib
 openpifpaf
-torch
-torchvision
 scikit_image
 Pillow
 scikit_learn

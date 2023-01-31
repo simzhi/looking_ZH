@@ -55,7 +55,6 @@ def normalize_by_image_(X, Y, image_size):
     X_new = np.array(X)/image_width
     Y_new = np.array(Y)-center_p[1]
 
-
     width = abs(np.max(X) - np.min(X))
     height = abs(np.max(Y) - np.min(Y))
 

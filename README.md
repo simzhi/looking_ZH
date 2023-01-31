@@ -28,6 +28,12 @@ Image taken from : https://jooinn.com/people-walking-on-pedestrian-lane-during-d
 
 Use ```3.6.9 <= python < 3.9```. Run ```pip3 install -r requirements.txt``` to get the dependencies
 
+And torch need to be installed separately, because pytorch must conform to the appropriate cuda version (cuda 11.6 or cuda 11.7)
+
+```pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116```
+
+```pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117```
+
 ## Predictor
 
 <img src="https://github.com/vita-epfl/looking/blob/main/images/kitti.gif" data-canonical-src="https://github.com/vita-epfl/looking/blob/main/images/kitti.gif" width="1238" height="375" />

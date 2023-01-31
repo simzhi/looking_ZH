@@ -8,6 +8,7 @@ from torchvision import datasets, models, transforms
 torch.manual_seed(1)
 np.random.seed(0)
 
+
 class Binarize(nn.Module):
     def __init__(self):
         super(Binarize, self).__init__()

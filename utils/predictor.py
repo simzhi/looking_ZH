@@ -18,7 +18,7 @@ from utils.utils_predict import *
 from PIL import Image, ImageFile
 
 DOWNLOAD = None
-INPUT_SIZE=51
+INPUT_SIZE = 51
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -43,7 +43,7 @@ class Predictor():
         args.device = self.device
         print('device : {}'.format(self.device))
         self.path_images = args.images
-        #self.net, self.processor, self.preprocess = load_pifpaf(args)
+        # self.net, self.processor, self.preprocess = load_pifpaf(args)
         self.predictor_ = load_pifpaf(args)
         self.path_model = './models/predictor'
         try:

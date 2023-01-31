@@ -8,3 +8,10 @@ openpifpaf
 scikit_image
 Pillow
 scikit_learn
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.13.1+cu116
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torchaudio==0.13.1+cu116
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torchvision==0.14.1+cu116
+

@@ -1,4 +1,0 @@
-openpifpaf
-PyQt5
-opencv-python==4.2.0.32
-matplotlib

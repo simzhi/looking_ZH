@@ -8,3 +8,5 @@ __pycache__
 *.gz
 *.zip
 *.csv
+*.vs
+*.vscode

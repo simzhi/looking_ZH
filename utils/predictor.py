@@ -1,17 +1,11 @@
-import configparser
 import os, errno
-import seaborn as sns
 import matplotlib.pyplot as plt
-import copy
 import argparse
 import PIL
-from zipfile import ZipFile
 from glob import glob
 from tqdm import tqdm
-import openpifpaf.datasets as datasets
 import time
 
-from utils.dataset import *
 from utils.network import *
 from utils.utils_predict import *
 
@@ -33,8 +27,12 @@ class Predictor():
     """
     def __init__(self, args, pifpaf_ver='shufflenetv2k30'):
         device = args.device
+        source = args.source
+        source = str(source)
+        webcam = source.isnumeric()
         args.checkpoint = pifpaf_ver
         args.force_complete_pose = True
+        # cuda Device or CPU
         if device != 'cpu':
             use_cuda = torch.cuda.is_available()
             self.device = torch.device("cuda:{}".format(device) if use_cuda else "cpu")
@@ -42,7 +40,9 @@ class Predictor():
             self.device = torch.device('cpu')
         args.device = self.device
         print('device : {}'.format(self.device))
+        # images path
         self.path_images = args.images
+        print('Images path : {}'.format(self.path_images))
         # self.net, self.processor, self.preprocess = load_pifpaf(args)
         self.predictor_ = load_pifpaf(args)
         self.path_model = './models/predictor'
@@ -70,26 +70,8 @@ class Predictor():
             model = LookingModel(INPUT_SIZE)
             print(self.device)
             if not os.path.isfile(os.path.join(self.path_model, 'LookingModel_LOOK+PIE.p')):
-                """
-                DOWNLOAD(LOOKING_MODEL, os.path.join(self.path_model, 'Looking_Model.zip'), quiet=False)
-                with ZipFile(os.path.join(self.path_model, 'Looking_Model.zip'), 'r') as zipObj:
-                    # Extract all the contents of zip file in current directory
-                    zipObj.extractall()
-                exit(0)"""
                 raise NotImplementedError
             model.load_state_dict(torch.load(os.path.join(self.path_model, 'LookingModel_LOOK+PIE.p'), map_location=self.device))
-            model.eval()
-        else:
-            model = AlexNet_head(self.device)
-            if not os.path.isfile(os.path.join(self.path_model, 'AlexNet_LOOK.p')):
-                """
-                DOWNLOAD(LOOKING_MODEL, os.path.join(self.path_model, 'Looking_Model.zip'), quiet=False)
-                with ZipFile(os.path.join(self.path_model, 'Looking_Model.zip'), 'r') as zipObj:
-                    # Extract all the contents of zip file in current directory
-                    zipObj.extractall()
-                exit(0)"""
-                raise NotImplementedError
-            model.load_state_dict(torch.load(os.path.join(self.path_model, 'AlexNet_LOOK.p')))
             model.eval()
         return model
 
@@ -138,52 +120,6 @@ class Predictor():
                 out_labels = []
         return out_labels
     
-    def predict_look_alexnet(self, boxes, image, batch_wise=True):
-        out_labels = []
-        data_transform = transforms.Compose([
-                        SquarePad(),
-                        transforms.Resize((227,227)),
-                    transforms.ToTensor(),
-                        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                            std=[0.229, 0.224, 0.225])])
-        if len(boxes) != 0:
-            if batch_wise:
-                heads = []
-                for i in range(len(boxes)):
-                    bbox = boxes[i]
-                    x1, y1, x2, y2, _ = bbox
-                    w, h = abs(x2-x1), abs(y2-y1)
-                    head_image = Image.fromarray(np.array(image)[int(y1):int(y1+(h/3)), int(x1):int(x2), :])
-                    head_tensor = data_transform(head_image)
-                    heads.append(head_tensor.detach().cpu().numpy())
-                if self.track_time:
-                    start = time.time()
-                    out_labels = self.model(torch.Tensor([heads]).squeeze(0).to(self.device)).detach().cpu().numpy().reshape(-1)
-                    end = time.time()
-                    self.inference_time.append(end-start)
-            else:
-                out_labels = []
-                for i in range(len(boxes)):
-                    bbox = boxes[i]
-                    x1, y1, x2, y2, _ = bbox
-                    w, h = abs(x2-x1), abs(y2-y1)
-                    head_image = Image.fromarray(np.array(image)[int(y1):int(y1+(h/3)), int(x1):int(x2), :])
-                    head_tensor = data_transform(head_image)
-                    #heads.append(head_tensor.detach().cpu().numpy())
-                    if self.track_time:
-                        start = time.time()
-                        looking_label = self.model(torch.Tensor(head_tensor).unsqueeze(0).to(self.device)).detach().cpu().numpy().reshape(-1)[0]
-                        end = time.time()
-                        self.inference_time.append(end-start)
-                    else:
-                        looking_label = self.model(torch.Tensor(head_tensor).unsqueeze(0).to(self.device)).detach().cpu().numpy().reshape(-1)[0]
-                    out_labels.append(looking_label)
-                #if self.track_time:
-                #    out_labels = self.model(torch.Tensor([heads]).squeeze(0).to(self.device)).detach().cpu().numpy().reshape(-1)
-        else:
-            out_labels = []
-        return out_labels
-    
     def render_image(self, image, bbox, keypoints, pred_labels, image_name, transparency, eyecontact_thresh):
         open_cv_image = np.array(image) 
         open_cv_image = open_cv_image[:, :, ::-1].copy()
@@ -198,8 +134,10 @@ class Predictor():
 
             if label > eyecontact_thresh:
                 color = (0,255,0)
+                print('Eye Contact Prediction : True {}'.format(label))
             else:
                 color = (0,0,255)
+                print('Eye Contact Prediction : False {}'.format(label))
             mask = draw_skeleton(mask, keypoints[i], color)
         mask = cv2.erode(mask,(7,7),iterations = 1)
         mask = cv2.GaussianBlur(mask,(3,3),0)
